@@ -5,7 +5,7 @@ from functions import *
 pygame.init()
 screen_sizes = (1200, 650)
 screen = pygame.display.set_mode(screen_sizes)
-pygame.display.set_caption("Hunting Game (Alpha 0.2.0)")
+pygame.display.set_caption("Hunting Game (Alpha 0.2.1)")
 favicon = pygame.image.load("images/favicon.png")
 pygame.display.set_icon(favicon)
 
@@ -17,6 +17,7 @@ lives = 3
 hearts = [True, True, True]
 npc_direction = "topleft"
 time = 90
+boost = 800
 win = False
 message = ""
 character_spawn = (screen_sizes[0]//2, screen_sizes[1]//2)
@@ -149,10 +150,16 @@ while lets_continue:
             lets_continue = False
             quit_game = True
     ### Zachycování eventů
-        ## Pomocí event
-
-
-    ## Mimo event
+    if pygame.key.get_pressed()[pygame.K_SPACE]:
+        if boost > 0:
+            boost -= 6
+            character_speed = 9
+        else:
+            character_speed = 5
+    else:
+        character_speed = 5
+        if boost < 800:
+            boost += 2
     if pygame.key.get_pressed()[pygame.K_UP] and character_image_rect.top > 100:
         character_image_rect.y -= character_speed
     elif pygame.key.get_pressed()[pygame.K_DOWN] and character_image_rect.bottom < screen_sizes[1]:
@@ -232,8 +239,8 @@ while lets_continue:
         screen.blit(heart3_image, heart3_image_rect)
     else:
         screen.blit(heart_empty3_image, heart_empty3_image_rect)
-    pygame.draw.rect(screen, gray, (350, 68, 800, 20))
-    pygame.draw.rect(screen, light_green, (360, 73, 780, 10))
+    pygame.draw.rect(screen, gray, (330, 68, 810, 20), 0, 10)
+    pygame.draw.rect(screen, light_green, (335, 73, boost, 10), 0, 10)
 
     if npc_direction == "topleft":
         if npc_image_rect.top > 100 and npc_image_rect.left > 0:
@@ -310,8 +317,8 @@ if lets_continue:
         screen.blit(heart3_image, heart3_image_rect)
     else:
         screen.blit(heart_empty3_image, heart_empty3_image_rect)
-    pygame.draw.rect(screen, gray, (350, 68, 800, 20))
-    pygame.draw.rect(screen, light_green, (360, 73, 780, 10))
+    pygame.draw.rect(screen, gray, (330, 68, 810, 20), 0, 10)
+    pygame.draw.rect(screen, light_green, (335, 73, boost, 10), 0, 10)
     screen.blit(npc_image, npc_image_rect)
     screen.blit(bomb1_image, bomb1_image_rect)
     screen.blit(bomb2_image, bomb2_image_rect)
