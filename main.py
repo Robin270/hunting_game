@@ -5,7 +5,7 @@ from functions import *
 pygame.init()
 screen_sizes = (1200, 650)
 screen = pygame.display.set_mode(screen_sizes)
-pygame.display.set_caption("Hunting Game (Alpha 0.1.0)")
+pygame.display.set_caption("Hunting Game (Alpha 0.2.0)")
 favicon = pygame.image.load("images/favicon.png")
 pygame.display.set_icon(favicon)
 
@@ -15,11 +15,15 @@ score = 0
 goal = 25
 lives = 3
 hearts = [True, True, True]
+npc_direction = "topleft"
 time = 90
 win = False
 message = ""
-
 character_spawn = (screen_sizes[0]//2, screen_sizes[1]//2)
+npc_spawn = (screen_sizes[0]//2-90, screen_sizes[1]//2-70)
+npc_step_y = random.randint(2, 6)
+npc_step_x = random.randint(2, 6)
+character_speed = 5
 target_pos = random_pos(screen_sizes[0], screen_sizes[1], character_spawn)
 bomb1_pos = random_pos(screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
 bomb2_pos = random_pos(screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
@@ -70,6 +74,7 @@ bomb3_image_rect.center = bomb3_pos
 
 npc_image = pygame.image.load("images/npc.png")
 npc_image_rect = character_image.get_rect()
+npc_image_rect.center = npc_spawn
 
 heart1_image = pygame.image.load("images/heart.png")
 heart1_image_rect = character_image.get_rect()
@@ -149,13 +154,13 @@ while lets_continue:
 
     ## Mimo event
     if pygame.key.get_pressed()[pygame.K_UP] and character_image_rect.top > 100:
-        character_image_rect.y -= 5
+        character_image_rect.y -= character_speed
     elif pygame.key.get_pressed()[pygame.K_DOWN] and character_image_rect.bottom < screen_sizes[1]:
-        character_image_rect.y += 5
+        character_image_rect.y += character_speed
     elif pygame.key.get_pressed()[pygame.K_LEFT] and character_image_rect.left > 0:
-        character_image_rect.x -= 5
+        character_image_rect.x -= character_speed
     elif pygame.key.get_pressed()[pygame.K_RIGHT] and character_image_rect.right < screen_sizes[0]:
-        character_image_rect.x += 5
+        character_image_rect.x += character_speed
     
     if character_image_rect.colliderect(target_image_rect):
         score += 1
@@ -193,6 +198,13 @@ while lets_continue:
         bomb3_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb3_image_rect.center = bomb3_pos
         hearts = minusHeart(hearts)
+    
+    if character_image_rect.colliderect(npc_image_rect):
+        npc_sound.play()
+        hit_sound.play()
+        npc_direction = "topleft"
+        npc_image_rect.topright = (npc_spawn)
+        hearts = minusHeart(hearts)
 
     if not hearts[0]:
         message = "Umřeli jste!"
@@ -208,7 +220,6 @@ while lets_continue:
     score_text = heading_font.render(f"Score: {score}", True, gold)
     screen.blit(timer_text, timer_text_rect)
     screen.blit(score_text, score_text_rect)
-
     if hearts[0]:
         screen.blit(heart1_image, heart1_image_rect)
     else:
@@ -221,10 +232,43 @@ while lets_continue:
         screen.blit(heart3_image, heart3_image_rect)
     else:
         screen.blit(heart_empty3_image, heart_empty3_image_rect)
-    
     pygame.draw.rect(screen, gray, (350, 68, 800, 20))
     pygame.draw.rect(screen, light_green, (360, 73, 780, 10))
 
+    if npc_direction == "topleft":
+        if npc_image_rect.top > 100 and npc_image_rect.left > 0:
+            npc_image_rect.top -= npc_step_y
+            npc_image_rect.left -= npc_step_x
+        if npc_image_rect.top <= 100 or npc_image_rect.left <= 0:
+            npc_step_y = random.randint(2, 6)
+            npc_step_x = random.randint(2, 6)
+            npc_direction = "bottomleft"
+    elif npc_direction == "bottomleft":
+        if npc_image_rect.bottom < screen_sizes[1] and npc_image_rect.left > 0:
+            npc_image_rect.bottom += npc_step_y
+            npc_image_rect.left -= npc_step_x
+        if npc_image_rect.bottom >= screen_sizes[1] or npc_image_rect.left <= 0:
+            npc_step_y = random.randint(2, 6)
+            npc_step_x = random.randint(2, 6)
+            npc_direction = "bottomright"
+    elif npc_direction == "bottomright":
+        if npc_image_rect.bottom < screen_sizes[1] and npc_image_rect.right < screen_sizes[0]:
+            npc_image_rect.bottom += npc_step_y
+            npc_image_rect.left += npc_step_x
+        if npc_image_rect.bottom >= screen_sizes[1] or npc_image_rect.left >= screen_sizes[0]:
+            npc_step_y = random.randint(2, 6)
+            npc_step_x = random.randint(2, 6)
+            npc_direction = "topright"
+    elif npc_direction == "topright":
+        if npc_image_rect.top > 100 and npc_image_rect.right < screen_sizes[0]:
+            npc_image_rect.top -= npc_step_y
+            npc_image_rect.right += npc_step_x
+        if npc_image_rect.top <= 100 or npc_image_rect.right >= screen_sizes[0]:
+            npc_step_y = random.randint(2, 6)
+            npc_step_x = random.randint(2, 6)
+            npc_direction = "topleft"
+
+    screen.blit(npc_image, npc_image_rect)
     screen.blit(bomb1_image, bomb1_image_rect)
     screen.blit(bomb2_image, bomb2_image_rect)
     screen.blit(bomb3_image, bomb3_image_rect)
@@ -254,7 +298,6 @@ if lets_continue:
     score_text = heading_font.render(f"Score: {score}", True, gold)
     screen.blit(timer_text, timer_text_rect)
     screen.blit(score_text, score_text_rect)
-
     if hearts[0]:
         screen.blit(heart1_image, heart1_image_rect)
     else:
@@ -267,10 +310,9 @@ if lets_continue:
         screen.blit(heart3_image, heart3_image_rect)
     else:
         screen.blit(heart_empty3_image, heart_empty3_image_rect)
-    
     pygame.draw.rect(screen, gray, (350, 68, 800, 20))
     pygame.draw.rect(screen, light_green, (360, 73, 780, 10))
-
+    screen.blit(npc_image, npc_image_rect)
     screen.blit(bomb1_image, bomb1_image_rect)
     screen.blit(bomb2_image, bomb2_image_rect)
     screen.blit(bomb3_image, bomb3_image_rect)
