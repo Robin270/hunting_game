@@ -5,8 +5,8 @@ from functions import *
 pygame.init()
 screen_sizes = (1200, 650)
 screen = pygame.display.set_mode(screen_sizes)
-pygame.display.set_caption("Hunting Game (Alpha 0.2.2)")
-favicon = pygame.image.load("images/favicon.png")
+pygame.display.set_caption("Tref Kunhútu (Beta 2.0)")
+favicon = pygame.image.load("img/favicon.png")
 pygame.display.set_icon(favicon)
 
 #### Definování
@@ -16,7 +16,7 @@ goal = 25
 lives = 3
 hearts = [True, True, True]
 npc_direction = "topleft"
-time = 80
+time = 8
 boost = 800
 regen_seed = 1500
 is_regen_rendered = False
@@ -52,86 +52,86 @@ background = pygame.Color("#cfccb5")
 
 ## Média
 # obrázky
-favicon_medium = pygame.image.load("images/favicon-medium.png")
+favicon_medium = pygame.image.load("img/favicon-medium.png")
 favicon_medium_rect = favicon_medium.get_rect()
 favicon_medium_rect.topleft = (10, 6)
 
-character_image = pygame.image.load("images/character.png")
+character_image = pygame.image.load("img/character.png")
 character_image_rect = character_image.get_rect()
 character_image_rect.center = character_spawn
 
-target_image = pygame.image.load("images/target.png")
+target_image = pygame.image.load("img/target.png")
 target_image_rect = target_image.get_rect()
 target_image_rect.center = target_pos
 
-bomb1_image = pygame.image.load("images/bomb.png")
+bomb1_image = pygame.image.load("img/bomb1.png")
 bomb1_image_rect = character_image.get_rect()
 bomb1_image_rect.center = bomb1_pos
 
-bomb2_image = pygame.image.load("images/bomb.png")
+bomb2_image = pygame.image.load("img/bomb2.png")
 bomb2_image_rect = character_image.get_rect()
 bomb2_image_rect.center = bomb2_pos
 
-bomb3_image = pygame.image.load("images/bomb.png")
+bomb3_image = pygame.image.load("img/bomb3.png")
 bomb3_image_rect = character_image.get_rect()
 bomb3_image_rect.center = bomb3_pos
 
-npc_image = pygame.image.load("images/npc.png")
+npc_image = pygame.image.load("img/npc.png")
 npc_image_rect = character_image.get_rect()
 npc_image_rect.center = npc_spawn
 
-heart1_image = pygame.image.load("images/heart.png")
+heart1_image = pygame.image.load("img/heart.png")
 heart1_image_rect = character_image.get_rect()
 heart1_image_rect.topleft = (80, 68)
 
-heart2_image = pygame.image.load("images/heart.png")
+heart2_image = pygame.image.load("img/heart.png")
 heart2_image_rect = character_image.get_rect()
 heart2_image_rect.topleft = (112, 68)
 
-heart3_image = pygame.image.load("images/heart.png")
+heart3_image = pygame.image.load("img/heart.png")
 heart3_image_rect = character_image.get_rect()
 heart3_image_rect.topleft = (144, 68)
 
-heart_empty1_image = pygame.image.load("images/heart-empty.png")
+heart_empty1_image = pygame.image.load("img/heart-empty.png")
 heart_empty1_image_rect = character_image.get_rect()
 heart_empty1_image_rect.topleft = (80, 68)
 
-heart_empty2_image = pygame.image.load("images/heart-empty.png")
+heart_empty2_image = pygame.image.load("img/heart-empty.png")
 heart_empty2_image_rect = character_image.get_rect()
 heart_empty2_image_rect.topleft = (112, 68)
 
-heart_empty3_image = pygame.image.load("images/heart-empty.png")
+heart_empty3_image = pygame.image.load("img/heart-empty.png")
 heart_empty3_image_rect = character_image.get_rect()
 heart_empty3_image_rect.topleft = (144, 68)
 
-heart_regen_image = pygame.image.load("images/heart-regen.png")
+heart_regen_image = pygame.image.load("img/heart-regen.png")
 heart_regen_image_rect = heart_regen_image.get_rect()
 heart_regen_image_rect.center = default_regen_pos
 
 # zvuky
-pygame.mixer.music.load("media/music.wav")
-pygame.mixer.music.set_volume(.16)
+pygame.mixer.music.load("sounds/music.wav")
+pygame.mixer.music.set_volume(.1)
 pygame.mixer.music.play(-1, .0)
 
-collect_sound = pygame.mixer.Sound("media/collect.wav")
-collect_sound.set_volume(.3)
+collect_sound = pygame.mixer.Sound("sounds/collect.wav")
+collect_sound.set_volume(3)
 
-win_sound = pygame.mixer.Sound("media/win.wav")
+win_sound = pygame.mixer.Sound("sounds/win.wav")
 win_sound.set_volume(.3)
 
-boom_sound = pygame.mixer.Sound("media/boom.wav")
+boom_sound = pygame.mixer.Sound("sounds/boom.wav")
 boom_sound.set_volume(.3)
 
-hit_sound = pygame.mixer.Sound("media/hit.wav")
+hit_sound = pygame.mixer.Sound("sounds/hit.wav")
 hit_sound.set_volume(.3)
 
-loose_sound = pygame.mixer.Sound("media/loose.wav")
+loose_sound = pygame.mixer.Sound("sounds/loose.wav")
 loose_sound.set_volume(.3)
 
-npc_sound = pygame.mixer.Sound("media/npc.wav")
+npc_sound = pygame.mixer.Sound("sounds/npc.wav")
 npc_sound.set_volume(.3)
 
-regen_sound = pygame.mixer.Sound("media/regen.wav")
+regen_sound = pygame.mixer.Sound("sounds/regen.wav")
 regen_sound.set_volume(.3)
 
 ## Písmo
@@ -140,7 +140,7 @@ heading_font = pygame.font.SysFont("arial", 38, True)
 final_font = pygame.font.SysFont("kokila", 64, True)
 
 # texty
-game_name_text = heading_font.render("Hunting Game", True, gold)
+game_name_text = heading_font.render("Tref Kunhútu", True, gold)
 game_name_text_rect = game_name_text.get_rect()
 game_name_text_rect.topleft = (57, 5)
 
@@ -184,7 +184,7 @@ while lets_continue:
         collect_sound.play()
         if score == goal:
             win = True
-            message = "Vyhráli jste!"
+            message = "Trefil jsi Kunhútu!"
             break
         target_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center)
         bomb1_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
@@ -230,7 +230,7 @@ while lets_continue:
         is_regen_rendered = False
 
     if not hearts[0]:
-        message = "Umřeli jste!"
+        message = "To mluví z vše…"
         break
 
     ### Periodické renderování
@@ -319,7 +319,7 @@ while lets_continue:
         time_counter = 0
         time -= 1
         if time == 0:
-            message = "Čas vypršel!"
+            message = "A vy si myslíte, že já to stíhám?"
             break
     clock.tick(fps)
 
