@@ -6,10 +6,10 @@ def time_to_minutes(time):
     seconds = f"{seconds:02d}"
     return minutes+":"+seconds
 
-def random_pos(maxwidth, maxheight, char_pos=(-1000, -1000), targ_pos=(-1000, -1000)):
-    output = (random.randint(32, maxwidth-32), random.randint(132, maxheight-32))
-    while (math.isclose(output[0], char_pos[0], abs_tol=70) or math.isclose(output[1], char_pos[1], abs_tol=70)) or (math.isclose(output[0], targ_pos[0], abs_tol=70) or math.isclose(output[1], targ_pos[1], abs_tol=70)):
-        output = (random.randint(32, maxwidth-32), random.randint(132, maxheight-32))
+def random_pos(tolerance, maxwidth, maxheight, char_pos=(-1000, -1000), targ_pos=(-1000, -1000)):
+    output = (random.randint(tolerance, maxwidth-tolerance), random.randint(100+tolerance, maxheight-tolerance))
+    while math.isclose(output[0], char_pos[0], abs_tol=70) or math.isclose(output[1], char_pos[1], abs_tol=70) or math.isclose(output[0], targ_pos[0], abs_tol=70) or math.isclose(output[1], targ_pos[1], abs_tol=70):
+        output = (random.randint(tolerance, maxwidth-tolerance), random.randint(100+tolerance, maxheight-tolerance))
     return output
 
 def regen_chance(frequency):

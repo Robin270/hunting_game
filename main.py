@@ -27,11 +27,11 @@ npc_spawn = (screen_sizes[0]//2-90, screen_sizes[1]//2-70)
 npc_step_y = random.randint(2, 6)
 npc_step_x = random.randint(2, 6)
 character_speed = 5
-target_pos = random_pos(screen_sizes[0], screen_sizes[1], character_spawn)
+target_pos = random_pos(14, screen_sizes[0], screen_sizes[1], character_spawn)
 default_regen_pos = (-1000, -1000)
-bomb1_pos = random_pos(screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
-bomb2_pos = random_pos(screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
-bomb3_pos = random_pos(screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
+bomb1_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
+bomb2_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
+bomb3_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
 
 ### Technické
 ## Čas, délky a velikosti
@@ -223,10 +223,10 @@ while lets_continue:
             win = True
             message = "Vyhráli jste!"
             break
-        target_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center)
-        bomb1_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
-        bomb2_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
-        bomb3_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        target_pos = random_pos(14, screen_sizes[0], screen_sizes[1], character_image_rect.center)
+        bomb1_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb2_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb3_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         target_image_rect.center = target_pos
         bomb1_image_rect.center = bomb1_pos
         bomb2_image_rect.center = bomb2_pos
@@ -234,26 +234,27 @@ while lets_continue:
     if character_image_rect.colliderect(bomb1_image_rect):
         boom_sound.play()
         hit_sound.play()
-        bomb1_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb1_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb1_image_rect.center = bomb1_pos
         hearts = minusHeart(hearts)
     if character_image_rect.colliderect(bomb2_image_rect):
         boom_sound.play()
         hit_sound.play()
-        bomb2_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb2_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb2_image_rect.center = bomb2_pos
         hearts = minusHeart(hearts)
     if character_image_rect.colliderect(bomb3_image_rect):
         boom_sound.play()
         hit_sound.play()
-        bomb3_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb3_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb3_image_rect.center = bomb3_pos
         hearts = minusHeart(hearts)
     if character_image_rect.colliderect(npc_image_rect):
         npc_sound.play()
         hit_sound.play()
         npc_direction = "topleft"
-        npc_image_rect.topright = (npc_spawn)
+        npc_spawn = random_pos(25, screen_sizes[0], screen_sizes[1], character_image_rect.center)
+        npc_image_rect.topright = npc_spawn
         hearts = minusHeart(hearts)
     if character_image_rect.colliderect(heart_regen_image_rect):
         regen_sound.play()
@@ -337,7 +338,7 @@ while lets_continue:
         regen_seed = False
     if regen_chance(regen_seed) and not is_regen_rendered:
         is_regen_rendered = True
-        regen_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center)
+        regen_pos = random_pos(30, screen_sizes[0], screen_sizes[1], character_image_rect.center)
         heart_regen_image_rect.center = regen_pos
         screen.blit(heart_regen_image, heart_regen_image_rect)
     elif is_regen_rendered:
