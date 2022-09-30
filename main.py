@@ -5,7 +5,7 @@ from functions import *
 pygame.init()
 screen_sizes = (1200, 650)
 screen = pygame.display.set_mode(screen_sizes)
-pygame.display.set_caption("Hunting Game (Alpha 0.2.2)")
+pygame.display.set_caption("Hunting Game (Beta 0.3.0)")
 favicon = pygame.image.load("images/favicon.png")
 pygame.display.set_icon(favicon)
 
@@ -170,15 +170,52 @@ while lets_continue:
         character_speed = 5
         if boost < 800:
             boost += 2
+    diagonal_speed_modifier = character_speed-math.sqrt(character_speed**2/2)
     if pygame.key.get_pressed()[pygame.K_UP] and character_image_rect.top > 100:
-        character_image_rect.y -= character_speed
+        if pygame.key.get_pressed()[pygame.K_LEFT] and character_image_rect.left > 0:
+            character_image_rect.x -= character_speed-diagonal_speed_modifier
+            character_image_rect.y -= character_speed-diagonal_speed_modifier
+        elif pygame.key.get_pressed()[pygame.K_RIGHT] and character_image_rect.right < screen_sizes[0]:
+            character_image_rect.x += character_speed-diagonal_speed_modifier
+            character_image_rect.y -= character_speed-diagonal_speed_modifier
+        elif pygame.key.get_pressed()[pygame.K_DOWN] and character_image_rect.bottom < screen_sizes[1]:
+            pass
+        else:
+            character_image_rect.y -= character_speed
     elif pygame.key.get_pressed()[pygame.K_DOWN] and character_image_rect.bottom < screen_sizes[1]:
-        character_image_rect.y += character_speed
+        if pygame.key.get_pressed()[pygame.K_LEFT] and character_image_rect.left > 0:
+            character_image_rect.x -= character_speed-diagonal_speed_modifier
+            character_image_rect.y += character_speed-diagonal_speed_modifier
+        elif pygame.key.get_pressed()[pygame.K_RIGHT] and character_image_rect.right < screen_sizes[0]:
+            character_image_rect.x += character_speed-diagonal_speed_modifier
+            character_image_rect.y += character_speed-diagonal_speed_modifier
+        elif pygame.key.get_pressed()[pygame.K_UP] and character_image_rect.top > 100:
+            pass
+        else:
+            character_image_rect.y += character_speed
     elif pygame.key.get_pressed()[pygame.K_LEFT] and character_image_rect.left > 0:
-        character_image_rect.x -= character_speed
+        if pygame.key.get_pressed()[pygame.K_UP] and character_image_rect.top > 100:
+            character_image_rect.y -= character_speed-diagonal_speed_modifier
+            character_image_rect.x -= character_speed-diagonal_speed_modifier
+        elif pygame.key.get_pressed()[pygame.K_DOWN] and character_image_rect.bottom < screen_sizes[1]:
+            character_image_rect.y += character_speed-diagonal_speed_modifier
+            character_image_rect.x -= character_speed-diagonal_speed_modifier
+        elif pygame.key.get_pressed()[pygame.K_RIGHT] and character_image_rect.right < screen_sizes[0]:
+            pass
+        else:
+            character_image_rect.x -= character_speed
     elif pygame.key.get_pressed()[pygame.K_RIGHT] and character_image_rect.right < screen_sizes[0]:
-        character_image_rect.x += character_speed
-    
+        if pygame.key.get_pressed()[pygame.K_UP] and character_image_rect.top > 100:
+            character_image_rect.y -= character_speed-diagonal_speed_modifier
+            character_image_rect.x += character_speed-diagonal_speed_modifier
+        elif pygame.key.get_pressed()[pygame.K_DOWN] and character_image_rect.bottom < screen_sizes[1]:
+            character_image_rect.y += character_speed-diagonal_speed_modifier
+            character_image_rect.x += character_speed-diagonal_speed_modifier
+        elif pygame.key.get_pressed()[pygame.K_LEFT] and character_image_rect.left > 0:
+            pass
+        else:
+            character_image_rect.x += character_speed
+
     if character_image_rect.colliderect(target_image_rect):
         score += 1
         collect_sound.play()
@@ -194,41 +231,35 @@ while lets_continue:
         bomb1_image_rect.center = bomb1_pos
         bomb2_image_rect.center = bomb2_pos
         bomb3_image_rect.center = bomb3_pos
-    
     if character_image_rect.colliderect(bomb1_image_rect):
         boom_sound.play()
         hit_sound.play()
         bomb1_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb1_image_rect.center = bomb1_pos
         hearts = minusHeart(hearts)
-
     if character_image_rect.colliderect(bomb2_image_rect):
         boom_sound.play()
         hit_sound.play()
         bomb2_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb2_image_rect.center = bomb2_pos
         hearts = minusHeart(hearts)
-
     if character_image_rect.colliderect(bomb3_image_rect):
         boom_sound.play()
         hit_sound.play()
         bomb3_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb3_image_rect.center = bomb3_pos
         hearts = minusHeart(hearts)
-    
     if character_image_rect.colliderect(npc_image_rect):
         npc_sound.play()
         hit_sound.play()
         npc_direction = "topleft"
         npc_image_rect.topright = (npc_spawn)
         hearts = minusHeart(hearts)
-    
     if character_image_rect.colliderect(heart_regen_image_rect):
         regen_sound.play()
         hearts = plusHeart(hearts)
         heart_regen_image_rect.center = default_regen_pos
         is_regen_rendered = False
-
     if not hearts[0]:
         message = "Umřeli jste!"
         break
@@ -255,6 +286,7 @@ while lets_continue:
         screen.blit(heart3_image, heart3_image_rect)
     else:
         screen.blit(heart_empty3_image, heart_empty3_image_rect)
+
     pygame.draw.rect(screen, gray, (330, 68, 810, 20), 0, 10)
     pygame.draw.rect(screen, light_green, (335, 73, boost, 10), 0, 10)
 
@@ -303,7 +335,6 @@ while lets_continue:
         regen_seed = 1650
     else:
         regen_seed = False
-    
     if regen_chance(regen_seed) and not is_regen_rendered:
         is_regen_rendered = True
         regen_pos = random_pos(screen_sizes[0], screen_sizes[1], character_image_rect.center)
@@ -368,7 +399,6 @@ if lets_continue:
     final_text_rect = final_text.get_rect()
     final_text_rect.center = (screen_sizes[0]//2, screen_sizes[1]//2)
     screen.blit(final_text, final_text_rect)
-    
     while lets_continue:
         pygame.display.update()
         for event in pygame.event.get():
