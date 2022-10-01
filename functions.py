@@ -12,7 +12,7 @@ def random_pos(tolerance, maxwidth, maxheight, char_pos=(-1000, -1000), targ_pos
         output = (random.randint(tolerance, maxwidth-tolerance), random.randint(100+tolerance, maxheight-tolerance))
     return output
 
-def regen_chance(frequency):
+def chance(frequency):
     if frequency == False:
         return False
     elif random.random() < 1/frequency:

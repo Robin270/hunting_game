@@ -5,7 +5,7 @@ from functions import *
 pygame.init()
 screen_sizes = (1200, 650)
 screen = pygame.display.set_mode(screen_sizes)
-pygame.display.set_caption("Hunting Game (Beta 0.3.0)")
+pygame.display.set_caption("Hunting Game (Beta 0.3.0 Indev)")
 favicon = pygame.image.load("images/favicon.png")
 pygame.display.set_icon(favicon)
 
@@ -17,21 +17,26 @@ lives = 3
 hearts = [True, True, True]
 npc_direction = "topleft"
 time = 80
-boost = 800
-regen_seed = 1500
+boost = 400
+regen_seed = 1600
 is_regen_rendered = False
+regen_timer = 0
+regen_warning = False
+regen_warning_timer = 0
+regen_warning_counter = 0
 win = False
-message = ""
+message = None
 character_spawn = (screen_sizes[0]//2, screen_sizes[1]//2)
 npc_spawn = (screen_sizes[0]//2-90, screen_sizes[1]//2-70)
 npc_step_y = random.randint(2, 6)
 npc_step_x = random.randint(2, 6)
 character_speed = 5
-target_pos = random_pos(14, screen_sizes[0], screen_sizes[1], character_spawn)
+target_pos = random_pos(28, screen_sizes[0], screen_sizes[1], character_spawn)
 default_regen_pos = (-1000, -1000)
-bomb1_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
-bomb2_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
-bomb3_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
+regen_pos = default_regen_pos
+bomb1_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
+bomb2_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
+bomb3_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_spawn, target_pos)
 
 ### Technické
 ## Čas, délky a velikosti
@@ -48,7 +53,9 @@ light_green2 = pygame.Color("#94ffbf")
 light_red = pygame.Color("#ffa1b6")
 cream = pygame.Color("#fcf5ca")
 gold = pygame.Color("#ffd700")
+
 background = pygame.Color("#cfccb5")
+boost_bar_color = light_green
 
 ## Média
 # obrázky
@@ -108,6 +115,10 @@ heart_regen_image = pygame.image.load("images/heart-regen.png")
 heart_regen_image_rect = heart_regen_image.get_rect()
 heart_regen_image_rect.center = default_regen_pos
 
+heart_regen_light_image = pygame.image.load("images/heart-regen-light.png")
+heart_regen_light_image_rect = heart_regen_light_image.get_rect()
+heart_regen_light_image_rect.center = default_regen_pos
+
 # zvuky
 pygame.mixer.music.load("media/music.wav")
 pygame.mixer.music.set_volume(.16)
@@ -131,8 +142,20 @@ loose_sound.set_volume(.3)
 npc_sound = pygame.mixer.Sound("media/npc.wav")
 npc_sound.set_volume(.3)
 
+npc_wall_sound = pygame.mixer.Sound("media/npc_wall.wav")
+npc_wall_sound.set_volume(.3)
+
 regen_sound = pygame.mixer.Sound("media/regen.wav")
 regen_sound.set_volume(.3)
+
+regen_warning_sound = pygame.mixer.Sound("media/regen_warning.wav")
+regen_warning_sound.set_volume(.3)
+
+clock_tick_sound = pygame.mixer.Sound("media/clock_tick.wav")
+clock_tick_sound.set_volume(1.9)
+
+sprint_sound = pygame.mixer.Sound("media/sprint.wav")
+sprint_sound.set_volume(.2)
 
 ## Písmo
 # fonty
@@ -162,14 +185,21 @@ while lets_continue:
     ### Zachycování eventů
     if pygame.key.get_pressed()[pygame.K_SPACE]:
         if boost > 0:
-            boost -= 6
+            if sprint_sound.get_num_channels() == 0:
+                sprint_sound.play()
+            boost_bar_color = light_green2
+            boost -= 3
             character_speed = 9
         else:
+            sprint_sound.stop()
+            boost_bar_color = light_green
             character_speed = 5
     else:
+        sprint_sound.stop()
+        boost_bar_color = light_green
         character_speed = 5
-        if boost < 800:
-            boost += 2
+        if boost < 400:
+            boost += 1
     diagonal_speed_modifier = character_speed-math.sqrt(character_speed**2/2)
     if pygame.key.get_pressed()[pygame.K_UP] and character_image_rect.top > 100:
         if pygame.key.get_pressed()[pygame.K_LEFT] and character_image_rect.left > 0:
@@ -223,10 +253,10 @@ while lets_continue:
             win = True
             message = "Vyhráli jste!"
             break
-        target_pos = random_pos(14, screen_sizes[0], screen_sizes[1], character_image_rect.center)
-        bomb1_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
-        bomb2_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
-        bomb3_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        target_pos = random_pos(28, screen_sizes[0], screen_sizes[1], character_image_rect.center)
+        bomb1_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb2_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb3_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         target_image_rect.center = target_pos
         bomb1_image_rect.center = bomb1_pos
         bomb2_image_rect.center = bomb2_pos
@@ -234,32 +264,33 @@ while lets_continue:
     if character_image_rect.colliderect(bomb1_image_rect):
         boom_sound.play()
         hit_sound.play()
-        bomb1_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb1_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb1_image_rect.center = bomb1_pos
         hearts = minusHeart(hearts)
     if character_image_rect.colliderect(bomb2_image_rect):
         boom_sound.play()
         hit_sound.play()
-        bomb2_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb2_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb2_image_rect.center = bomb2_pos
         hearts = minusHeart(hearts)
     if character_image_rect.colliderect(bomb3_image_rect):
         boom_sound.play()
         hit_sound.play()
-        bomb3_pos = random_pos(23, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
+        bomb3_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
         bomb3_image_rect.center = bomb3_pos
         hearts = minusHeart(hearts)
     if character_image_rect.colliderect(npc_image_rect):
         npc_sound.play()
         hit_sound.play()
         npc_direction = "topleft"
-        npc_spawn = random_pos(25, screen_sizes[0], screen_sizes[1], character_image_rect.center)
+        npc_spawn = random_pos(50, screen_sizes[0], screen_sizes[1], character_image_rect.center)
         npc_image_rect.topright = npc_spawn
         hearts = minusHeart(hearts)
-    if character_image_rect.colliderect(heart_regen_image_rect):
+    if character_image_rect.colliderect(heart_regen_image_rect) or character_image_rect.colliderect(heart_regen_light_image_rect):
         regen_sound.play()
         hearts = plusHeart(hearts)
         heart_regen_image_rect.center = default_regen_pos
+        heart_regen_light_image_rect.center = default_regen_pos
         is_regen_rendered = False
     if not hearts[0]:
         message = "Umřeli jste!"
@@ -288,8 +319,8 @@ while lets_continue:
     else:
         screen.blit(heart_empty3_image, heart_empty3_image_rect)
 
-    pygame.draw.rect(screen, gray, (330, 68, 810, 20), 0, 10)
-    pygame.draw.rect(screen, light_green, (335, 73, boost, 10), 0, 10)
+    pygame.draw.rect(screen, gray, (775, 68, 410, 20), 0, 10)
+    pygame.draw.rect(screen, boost_bar_color, (780, 73, boost, 10), 0, 10)
 
     if npc_direction == "topleft":
         if npc_image_rect.top > 100 and npc_image_rect.left > 0:
@@ -299,6 +330,7 @@ while lets_continue:
             npc_step_y = random.randint(2, 6)
             npc_step_x = random.randint(2, 6)
             npc_direction = "bottomleft"
+            npc_wall_sound.play()
     elif npc_direction == "bottomleft":
         if npc_image_rect.bottom < screen_sizes[1] and npc_image_rect.left > 0:
             npc_image_rect.bottom += npc_step_y
@@ -307,6 +339,7 @@ while lets_continue:
             npc_step_y = random.randint(2, 6)
             npc_step_x = random.randint(2, 6)
             npc_direction = "bottomright"
+            npc_wall_sound.play()
     elif npc_direction == "bottomright":
         if npc_image_rect.bottom < screen_sizes[1] and npc_image_rect.right < screen_sizes[0]:
             npc_image_rect.bottom += npc_step_y
@@ -315,6 +348,7 @@ while lets_continue:
             npc_step_y = random.randint(2, 6)
             npc_step_x = random.randint(2, 6)
             npc_direction = "topright"
+            npc_wall_sound.play()
     elif npc_direction == "topright":
         if npc_image_rect.top > 100 and npc_image_rect.right < screen_sizes[0]:
             npc_image_rect.top -= npc_step_y
@@ -323,6 +357,7 @@ while lets_continue:
             npc_step_y = random.randint(2, 6)
             npc_step_x = random.randint(2, 6)
             npc_direction = "topleft"
+            npc_wall_sound.play()
 
     screen.blit(npc_image, npc_image_rect)
     screen.blit(bomb1_image, bomb1_image_rect)
@@ -330,19 +365,49 @@ while lets_continue:
     screen.blit(bomb3_image, bomb3_image_rect)
     screen.blit(target_image, target_image_rect)
     screen.blit(character_image, character_image_rect)
+
     if not hearts[1]:
-        regen_seed = 900
+        regen_seed = 950
     elif not hearts[2]:
-        regen_seed = 1650
+        regen_seed = 1600
     else:
         regen_seed = False
-    if regen_chance(regen_seed) and not is_regen_rendered:
+    if not is_regen_rendered and chance(regen_seed):
         is_regen_rendered = True
-        regen_pos = random_pos(30, screen_sizes[0], screen_sizes[1], character_image_rect.center)
+        regen_timer = 0
+        regen_warning_counter = 0
+        regen_warning_timer = 0
+        regen_warning = False
+        regen_pos = random_pos(60, screen_sizes[0], screen_sizes[1], character_image_rect.center)
         heart_regen_image_rect.center = regen_pos
         screen.blit(heart_regen_image, heart_regen_image_rect)
     elif is_regen_rendered:
-        screen.blit(heart_regen_image, heart_regen_image_rect)
+        regen_timer += 1
+        if regen_warning_counter == 4:
+            is_regen_rendered = False
+            heart_regen_image_rect.center = default_regen_pos
+            heart_regen_light_image_rect.center = default_regen_pos
+        elif regen_timer > 550:
+            if regen_warning:
+                heart_regen_light_image_rect.center = regen_pos
+                screen.blit(heart_regen_light_image, heart_regen_light_image_rect)
+                regen_warning_timer += 1
+                if regen_warning_timer == fps//2:
+                    regen_warning = False
+                    regen_warning_timer = 0
+                elif regen_warning_timer == 1:
+                    regen_warning_sound.play()
+            else:
+                heart_regen_image_rect.center = regen_pos
+                screen.blit(heart_regen_image, heart_regen_image_rect)
+                regen_warning_timer += 1
+                if regen_warning_timer == fps//2:
+                    regen_warning = True
+                    regen_warning_timer = 0
+                elif regen_warning_timer == 1:
+                    regen_warning_counter += 1
+        elif regen_timer <= 550:
+            screen.blit(heart_regen_image, heart_regen_image_rect)
 
     ## Update
     pygame.display.update()
@@ -350,7 +415,10 @@ while lets_continue:
     if time_counter == fps:
         time_counter = 0
         time -= 1
-        if time == 0:
+        if time == 3 or time == 2 or time == 1:
+            pygame.mixer.music.set_volume(.05)
+            clock_tick_sound.play()
+        elif time == 0:
             message = "Čas vypršel!"
             break
     clock.tick(fps)
@@ -379,15 +447,18 @@ if lets_continue:
         screen.blit(heart3_image, heart3_image_rect)
     else:
         screen.blit(heart_empty3_image, heart_empty3_image_rect)
-    pygame.draw.rect(screen, gray, (330, 68, 810, 20), 0, 10)
-    pygame.draw.rect(screen, light_green, (335, 73, boost, 10), 0, 10)
+    pygame.draw.rect(screen, gray, (775, 68, 410, 20), 0, 10)
+    pygame.draw.rect(screen, boost_bar_color, (780, 73, boost, 10), 0, 10)
     screen.blit(npc_image, npc_image_rect)
     screen.blit(bomb1_image, bomb1_image_rect)
     screen.blit(bomb2_image, bomb2_image_rect)
     screen.blit(bomb3_image, bomb3_image_rect)
     screen.blit(target_image, target_image_rect)
     if is_regen_rendered:
-        screen.blit(heart_regen_image, heart_regen_image_rect)
+        if regen_warning:
+            screen.blit(heart_regen_light_image, heart_regen_light_image_rect)
+        else:
+            screen.blit(heart_regen_image, heart_regen_image_rect)
     if win:
         win_sound.play()
         pygame.draw.rect(screen, gray, (screen_sizes[0]//2-396, screen_sizes[1]//2-121, 800, 250))
