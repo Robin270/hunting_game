@@ -1,6 +1,6 @@
 import pygame, math, random, modules.functions, modules.gui
 from modules.functions import *
-from modules.gui import Button
+from modules.gui import *
 
 #### Inicializace
 pygame.init()
@@ -23,26 +23,28 @@ start_text = pygame.font.SysFont("kokila", 64, True).render("Hunting Game", True
 start_text_rect = start_text.get_rect()
 start_text_rect.center = (screen_sizes[0]//2+20, 200)
 
-start_button = Button("Start", (255, 255, 255), "calibri", screen, (0, 0, 0), 0, 0, 200, 50)
-start_button.rect.center = (screen_sizes[0]//2, 290)
+start_button = Button(screen, 0, 0, 200, 50, (0, 0, 0))
+start_button.rect.center_pos_override((screen_sizes[0]//2, 290))
+start_button.rect.set_border_radius(30)
+start_button.label.set_label("calibri", "Start", 25, (255, 255, 255), True)
+start_button.hover.set_effects((50, 50, 50))
 
 #### Úvodní obrazovka
 screen.fill(pygame.Color("#cfccb5"))
+screen.blit(favicon_medium, favicon_medium_rect)
 screen.blit(start_text, start_text_rect)
 start_button.render()
-screen.blit(favicon_medium, favicon_medium_rect)
 pygame.display.update()
 
 while not start:
-    # start_button.hover_effect()
+    if start_button.is_clicked():
+        start = True
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             start = True
             play_again = False
-        elif event.type == pygame.MOUSEBUTTONDOWN and start_button.is_hovered():
-            start = True
+
 while play_again:
-    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
     play_again = False
     #### Definování
     ### In-game
@@ -506,15 +508,16 @@ while play_again:
         final_text_rect = final_text.get_rect()
         final_text_rect.center = (screen_sizes[0]//2, screen_sizes[1]//2-50)
         screen.blit(final_text, final_text_rect)
-        retry_button = Button("Hrát znovu", black, "kokila", screen, cream, 0, 0, 200, 60)
-        retry_button.rect.center = (screen_sizes[0]//2, screen_sizes[1]//2+40)
-        retry_button.render()
         pygame.display.update()
+        retry_button = Button(screen, 0, 0, 200, 60, cream)
+        retry_button.rect.center_pos_override((screen_sizes[0]//2, screen_sizes[1]//2+40))
+        retry_button.label.set_label("kokila", "Hrát znovu", 35, black)
+        retry_button.hover.set_effects(gold)
+        retry_button.render()
         while not quit_game and not play_again:
-            # retry_button.hover_effect()
+            if retry_button.is_clicked():
+                play_again = True
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     quit_game = True
-                elif event.type == pygame.MOUSEBUTTONDOWN and retry_button.is_hovered():
-                    play_again = True
 pygame.quit()
