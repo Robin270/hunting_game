@@ -6,7 +6,7 @@ from modules.gui import *
 pygame.init()
 screen_sizes = (1200, 650)
 screen = pygame.display.set_mode(screen_sizes)
-pygame.display.set_caption("Hunting Game (Beta 0.3.1)")
+pygame.display.set_caption("Hunting Game (Beta 0.4.0 Indev)")
 favicon = pygame.image.load("images/favicon.png")
 pygame.display.set_icon(favicon)
 
@@ -26,24 +26,22 @@ start_text_rect.center = (screen_sizes[0]//2+20, 200)
 start_button = Button(screen, 0, 0, 200, 50, (0, 0, 0))
 start_button.rect.center_pos_override((screen_sizes[0]//2, 290))
 start_button.rect.set_border_radius(30)
+start_button.rect.add_shadow((90, 90, 90), 4, 4, False)
 start_button.label.set_label("calibri", "Start", 25, (255, 255, 255), True)
 start_button.hover.set_effects((50, 50, 50))
 
-#### Úvodní obrazovka
-screen.fill(pygame.Color("#cfccb5"))
-screen.blit(favicon_medium, favicon_medium_rect)
-screen.blit(start_text, start_text_rect)
-start_button.render()
-pygame.display.update()
-
+#### Úvodní GUI
 while not start:
+    screen.fill(pygame.Color("#cfccb5"))
+    screen.blit(favicon_medium, favicon_medium_rect)
+    screen.blit(start_text, start_text_rect)
     if start_button.is_clicked():
         start = True
+    pygame.display.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             start = True
             play_again = False
-
 while play_again:
     play_again = False
     #### Definování
@@ -498,25 +496,30 @@ while play_again:
                 screen.blit(heart_regen_image, heart_regen_image_rect)
         if win:
             win_sound.play()
-            pygame.draw.rect(screen, gray, (screen_sizes[0]//2-396, screen_sizes[1]//2-121, 800, 250))
-            pygame.draw.rect(screen, light_green2, (screen_sizes[0]//2-400, screen_sizes[1]//2-125, 800, 250))
+            end_color = light_green2
         else:
             loose_sound.play()
-            pygame.draw.rect(screen, gray, (screen_sizes[0]//2-396, screen_sizes[1]//2-121, 800, 250))
-            pygame.draw.rect(screen, light_red, (screen_sizes[0]//2-400, screen_sizes[1]//2-125, 800, 250))
+            end_color = light_red
+        ## Konečné GUI
+        end_gui = Button(screen, screen_sizes[0]//2-400, screen_sizes[1]//2-125, 800, 250, end_color)
+        end_gui.rect.add_shadow(gray, 4, 4, True)
+        
         final_text = alert_font.render(message, False, black)
         final_text_rect = final_text.get_rect()
         final_text_rect.center = (screen_sizes[0]//2, screen_sizes[1]//2-50)
-        screen.blit(final_text, final_text_rect)
-        pygame.display.update()
+
         retry_button = Button(screen, 0, 0, 200, 60, cream)
         retry_button.rect.center_pos_override((screen_sizes[0]//2, screen_sizes[1]//2+40))
         retry_button.label.set_label("kokila", "Hrát znovu", 35, black)
+        retry_button.rect.add_shadow(black, 10, 6, False)
         retry_button.hover.set_effects(gold)
-        retry_button.render()
+
         while not quit_game and not play_again:
+            end_gui.render()
+            screen.blit(final_text, final_text_rect)
             if retry_button.is_clicked():
                 play_again = True
+            pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     quit_game = True
