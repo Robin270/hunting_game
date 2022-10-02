@@ -97,7 +97,6 @@ class Button:
             text_rect = self.label.text.get_rect()
             text_rect.center = rect_to_render.center
             self.surface.blit(self.label.text, text_rect)
-        # pygame.display.update()
 
     def is_hovered(self) -> bool:
         mouse_pos = pygame.mouse.get_pos()
