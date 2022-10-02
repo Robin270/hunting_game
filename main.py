@@ -6,7 +6,7 @@ from modules.gui import *
 pygame.init()
 screen_sizes = (1200, 650)
 screen = pygame.display.set_mode(screen_sizes)
-pygame.display.set_caption("Hunting Game (Beta 0.3.1 Indev)")
+pygame.display.set_caption("Hunting Game (Beta 0.3.1)")
 favicon = pygame.image.load("images/favicon.png")
 pygame.display.set_icon(favicon)
 
