@@ -288,6 +288,7 @@ while play_again:
                 win = True
                 message = "Vyhráli jste!"
                 lets_continue = False
+                break
             target_pos = random_pos(28, screen_sizes[0], screen_sizes[1], character_image_rect.center)
             bomb1_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
             bomb2_pos = random_pos(46, screen_sizes[0], screen_sizes[1], character_image_rect.center, target_pos)
@@ -330,6 +331,7 @@ while play_again:
         if not hearts[0]:
             message = "Umřeli jste!"
             lets_continue = False
+            break
 
         ### Periodické renderování
         screen.fill(background)
@@ -422,7 +424,7 @@ while play_again:
                 is_regen_rendered = False
                 heart_regen_image_rect.center = default_regen_pos
                 heart_regen_light_image_rect.center = default_regen_pos
-            elif regen_timer > 550:
+            elif regen_timer > 150:
                 if regen_warning:
                     heart_regen_light_image_rect.center = regen_pos
                     screen.blit(heart_regen_light_image, heart_regen_light_image_rect)
