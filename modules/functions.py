@@ -35,7 +35,7 @@ def minusHeart(hearts: list[bool, bool, bool]) -> list[bool, bool, bool]:
     return hearts
 
 def plusHeart(hearts: list[bool, bool, bool]) -> list[bool, bool, bool]:
-    """This function adds a new hart (if there's any missing) zo a given list of hearths and returns it back"""
+    """This function adds a new hart (if there's any missing) to a given list of hearths and returns it back"""
     if not hearts[1]:
         hearts[1] = True
     elif not hearts[2]:
