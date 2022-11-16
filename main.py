@@ -65,6 +65,8 @@ while play_again:
     npc_spawn = (screen_sizes[0]//2-90, screen_sizes[1]//2-70)
     npc_step_y = random.randint(2, 6)
     npc_step_x = random.randint(2, 6)
+    npc_sprite = 0
+    npc_last_position = None
     character_speed = 5
     target_pos = random_pos(28, screen_sizes[0], screen_sizes[1], character_spawn)
     default_regen_pos = (-1000, -1000)
@@ -118,9 +120,11 @@ while play_again:
     bomb3_image_rect = character_image.get_rect()
     bomb3_image_rect.center = bomb3_pos
 
-    npc_image = pygame.image.load("images/npc.png")
-    npc_image_rect = character_image.get_rect()
-    npc_image_rect.center = npc_spawn
+    npc_images = {}
+    for i in range(0, 360, 24):
+        npc_images[i] = [None, None]
+        npc_images[i][0] = pygame.image.load(f"images/npc{i}.png")
+        npc_images[i][1] = npc_images[i][0].get_rect()
 
     heart1_image = pygame.image.load("images/heart.png")
     heart1_image_rect = character_image.get_rect()
@@ -281,6 +285,13 @@ while play_again:
             else:
                 character_image_rect.x += character_speed
 
+        npc_image = npc_images[npc_sprite][0]
+        npc_image_rect = npc_images[npc_sprite][1]
+        if npc_last_position == None:
+            npc_image_rect.center = npc_spawn
+        else:
+            npc_image_rect.center = npc_last_position
+
         if character_image_rect.colliderect(target_image_rect):
             score += 1
             collect_sound.play()
@@ -395,6 +406,7 @@ while play_again:
                 npc_step_x = random.randint(2, 6)
                 npc_direction = "topleft"
                 npc_wall_sound.play()
+        npc_last_position = npc_image_rect.center
 
         screen.blit(npc_image, npc_image_rect)
         screen.blit(bomb1_image, bomb1_image_rect)
@@ -448,6 +460,10 @@ while play_again:
 
         ## Update
         pygame.display.update()
+        if npc_sprite != 336:
+            npc_sprite += 24
+        else:
+            npc_sprite = 0
         time_counter += 1
         if time_counter == fps:
             time_counter = 0
